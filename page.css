@@ -58,6 +58,15 @@
   border-top-color: rgba(255,255,255,0.04);
   color: #9fb4c9;
 }
+.dark .contact-card{
+  color: #e6f7ff;
+}
+.dark .contact-card .label{
+  color: #e6f7ff;
+}
+.dark .muted{
+  color: #a8c5dd;
+}
 
 /* Improve header/nav contrast in dark mode for readability */
 .dark .site-header{
