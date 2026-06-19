@@ -625,6 +625,43 @@ section h2 {
   background: rgba(0,0,0,0.05);
   border-radius: 4px;
 }
+.lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.4);
+  color: white;
+  border: none;
+  padding: 1rem 1.25rem;
+  font-size: 2rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  z-index: 61;
+  font-weight: 300;
+  line-height: 1;
+}
+.lightbox-nav:hover {
+  background: rgba(0,0,0,0.6);
+}
+.lightbox-prev {
+  left: 1rem;
+}
+.lightbox-next {
+  right: 1rem;
+}
+.lightbox-counter {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.4);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  z-index: 61;
+}
 .lightbox .lightbox-img img {
   max-width: 90vw;
   max-height: 80vh;

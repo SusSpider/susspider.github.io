@@ -223,8 +223,13 @@
         <div id="lightbox" class="lightbox" aria-hidden="true">
             <div class="lightbox-inner">
                 <button id="lightboxClose" class="lightbox-close" aria-label="Close">✕</button>
+                <button id="lightboxPrev" class="lightbox-nav lightbox-prev" aria-label="Previous image">‹</button>
+                <button id="lightboxNext" class="lightbox-nav lightbox-next" aria-label="Next image">›</button>
                 <div class="lightbox-content">
                     <div class="lightbox-img">Artwork preview</div>
+                </div>
+                <div class="lightbox-counter">
+                    <span id="lightboxCounter">1 / 4</span>
                 </div>
             </div>
         </div>
@@ -259,39 +264,114 @@
                 localStorage.setItem('theme', isDark ? 'dark' : 'light');
             });
 
-            // Simple gallery lightbox (placeholders)
+            // Enhanced gallery lightbox with navigation
             const galleryItems = document.querySelectorAll('.gallery-item');
             const lightbox = document.getElementById('lightbox');
             const lightboxClose = document.getElementById('lightboxClose');
             const lightboxImg = document.querySelector('.lightbox-img');
-
-            galleryItems.forEach((btn) => {
-                btn.addEventListener('click', () => {
-                    const src = btn.dataset.src;
-                    if (src) {
-                        lightboxImg.innerHTML = `<img src="${src}" alt="Artwork preview">`;
-                    } else {
-                        lightboxImg.textContent = btn.textContent || 'Artwork preview';
-                    }
-                    lightbox.classList.add('visible');
-                    lightbox.setAttribute('aria-hidden', 'false');
-                });
-            });
-
-            lightboxClose.addEventListener('click', () => {
+            const lightboxPrev = document.getElementById('lightboxPrev');
+            const lightboxNext = document.getElementById('lightboxNext');
+            const lightboxCounter = document.getElementById('lightboxCounter');
+            
+            let currentIndex = 0;
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            const galleryArray = Array.from(galleryItems);
+            
+            function updateLightbox(index) {
+                if (index < 0) {
+                    currentIndex = galleryArray.length - 1;
+                } else if (index >= galleryArray.length) {
+                    currentIndex = 0;
+                } else {
+                    currentIndex = index;
+                }
+                
+                const item = galleryArray[currentIndex];
+                const src = item.dataset.src;
+                if (src) {
+                    lightboxImg.innerHTML = `<img src="${src}" alt="Artwork preview">`;
+                } else {
+                    lightboxImg.textContent = item.textContent || 'Artwork preview';
+                }
+                lightboxCounter.textContent = `${currentIndex + 1} / ${galleryArray.length}`;
+            }
+            
+            function openLightbox(index) {
+                updateLightbox(index);
+                lightbox.classList.add('visible');
+                lightbox.setAttribute('aria-hidden', 'false');
+            }
+            
+            function closeLightbox() {
                 lightbox.classList.remove('visible');
                 lightbox.setAttribute('aria-hidden', 'true');
                 lightboxImg.innerHTML = '';
+            }
+
+            galleryItems.forEach((btn, index) => {
+                btn.addEventListener('click', () => {
+                    openLightbox(index);
+                });
+            });
+
+            lightboxClose.addEventListener('click', closeLightbox);
+            
+            lightboxPrev.addEventListener('click', (e) => {
+                e.stopPropagation();
+                updateLightbox(currentIndex - 1);
+            });
+            
+            lightboxNext.addEventListener('click', (e) => {
+                e.stopPropagation();
+                updateLightbox(currentIndex + 1);
             });
 
             // Close on background click
             lightbox.addEventListener('click', (e) => {
                 if (e.target === lightbox) {
-                    lightbox.classList.remove('visible');
-                    lightbox.setAttribute('aria-hidden', 'true');
-                    lightboxImg.innerHTML = '';
+                    closeLightbox();
                 }
             });
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (lightbox.classList.contains('visible')) {
+                    if (e.key === 'ArrowLeft') {
+                        updateLightbox(currentIndex - 1);
+                    } else if (e.key === 'ArrowRight') {
+                        updateLightbox(currentIndex + 1);
+                    } else if (e.key === 'Escape') {
+                        closeLightbox();
+                    }
+                }
+            });
+            
+            // Touch/swipe support
+            lightbox.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            lightbox.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const diff = touchStartX - touchEndX;
+                
+                if (Math.abs(diff) > swipeThreshold) {
+                    if (diff > 0) {
+                        // Swiped left, show next image
+                        updateLightbox(currentIndex + 1);
+                    } else {
+                        // Swiped right, show previous image
+                        updateLightbox(currentIndex - 1);
+                    }
+                }
+            }
 
             // Smooth scroll behavior (modern browsers also use CSS)
             document.documentElement.style.scrollBehavior = 'smooth';
